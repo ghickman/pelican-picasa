@@ -23,12 +23,12 @@ class Picasa(object):
         self.client.source = 'Super Awesome Pelican Plugin'
         self.client.ProgrammaticLogin()
 
-    def fetch(self, gen, *args, **kwargs):
-        print args
-        print kwargs
+    def fetch(self, gen, album_id, tag=None):
         user = gen.settings['PICASA_USER_ID']
-        tag = gen.settings['PICASA_TAG']
-        photos = self.client.GetTaggedPhotos(tag, user=user)
+        feed = '/data/feed/api/user/{0}/albumid/{1}?kind=photo'.format(user, album_id)
+        if tag is not None:
+            feed = '{0}&tag={1}'.format(feed, tag)
+        photos = self.client.GetFeed(feed)
         return [Photo(item) for item in photos.entry]
 
 
@@ -42,8 +42,11 @@ def fetch_photos(gen, metadata):
         'PICASA_PASSWORD' in gen.settings.keys(),
         'PICASA_USER_ID' in gen.settings.keys()
     )
-    if all(settings):
-        gen.context['picasa'] = gen.plugin_instance.fetch(gen)
+    if all(settings) and 'picasa_album' in metadata.keys():
+        args = [gen, metadata['picasa_album']]
+        if 'picasa_tag' in metadata.keys():
+            args.append(metadata['picasa_tag'])
+        gen.context['picasa'] = gen.plugin_instance.fetch(*args)
 
 
 def register():
