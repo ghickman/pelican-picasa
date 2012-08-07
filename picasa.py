@@ -3,6 +3,9 @@ from gdata.photos import service
 from pelican import signals
 
 
+__version__ = '0.1'
+
+
 class Photo(object):
     def __init__(self, data):
         self.url = data.GetHtmlLink().href
